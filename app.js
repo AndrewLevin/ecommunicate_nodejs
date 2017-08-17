@@ -36,6 +36,24 @@ const server = http.createServer((req, res) => {
   res.end('Test\n');
 });
 
+
 server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+server.on('request', (request, response) => {
+
+    let body = [];
+    request.on('data', (chunk) => {
+	body.push(chunk);
+
+
+    }).on('end', () => {
+	body = Buffer.concat(body).toString();
+
+	console.log(decodeURIComponent(body));
+
+	console.log(body);
+    });
+
 });
