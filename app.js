@@ -1,3 +1,4 @@
+const fs = require('fs');
 const http = require('http');
 
 const hostname = 'ec2-35-165-191-120.us-west-2.compute.amazonaws.com';
@@ -16,8 +17,8 @@ var registrationToken = "e6AVusNPakw:APA91bFDfSWdFqebtawjWLnphbwIMWYsBLbznA6nhrN
 
 var payload = {
   notification: {
-    title: "$GOOG up 1.43% on the day",
-    body: "$GOOG gained 11.80 points to close at 835.67, up 1.43% on the day."
+    title: "message title",
+    body: "message body"
   }
 };
 
@@ -40,6 +41,27 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
+
+var mysql_db_password = fs.readFileSync('/home/ec2-user/secrets.txt').toString().split('\n')[0];
+
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+  user     : 'nodejs_server',
+  password : mysql_db_password,
+  database : 'open',
+  port : '3306',
+});
+ 
+connection.connect();
+
+connection.query('select * from messages;',function (error, results, fields) {
+
+    console.log(results[0]);
+
+});
+
+connection.end();
 
 server.on('request', (request, response) => {
 
