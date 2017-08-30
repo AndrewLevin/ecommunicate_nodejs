@@ -29,14 +29,6 @@ var payload = {
 };
 
 
-admin.messaging().sendToDevice(registrationToken, payload)
-  .then(function(response) {
-    console.log("Successfully sent message:", response);
-  })
-  .catch(function(error) {
-    console.log("Error sending message:", error);
-  });
-
 const server = https.createServer(options, (req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
@@ -103,6 +95,30 @@ server.on('request', (request, response) => {
 		    connection.query('insert into messages set username1="'+username1+'", username2 ="'+username2+'", forward="'+forward+'", message="'+message+'", time = "'+now.toISOString()+'";',function (error, results, fields) { 
 			response.end();
 		    });
+
+
+		    connection.query('select token from device_tokens where username = "'+contact+'";',function (error, results, fields) {
+					 
+			if (error) console.log(error);
+					 
+			for (let i = 0, len = results.length; i < len; ++i) {
+			    
+			    var token = results[i]["token"];
+			    
+			    admin.messaging().sendToDevice(token, payload)
+				.then(function(response) {
+				    console.log("Successfully sent message:", response);
+				})
+				.catch(function(error) {
+				    console.log("Error sending message:", error);
+				});
+			}
+			
+			
+			
+		    });
+
+
 
 		});
 
@@ -253,9 +269,11 @@ server.on('request', (request, response) => {
 
 			json_string = " [ ";
 
+			    json_string = json_string + " { 'id' : " + 1 + ", 'name': '"+username+"','statusMsg': '' }"
+
 			for (let i = 0, len = contacts.length; i < len; ++i){
 
-			    json_string = json_string + " { 'id' : " + (i+1) + ", 'name': '"+contacts[i]+"','statusMsg': '' }"
+			    json_string = json_string + ", { 'id' : " + (i+2) + ", 'name': '"+contacts[i]+"','statusMsg': '' }"
 
 			}
 
@@ -301,17 +319,14 @@ server.on('request', (request, response) => {
 		    
 		    connection.connect();
 		    
-		    connection.query('insert into device_tokens set username = "'+username+'", token="'+device_token+'";',function (error, results, fields) 
-
-{
-
-if (error) console.log(error);
-
-
- });
-
+		    connection.query('insert into device_tokens set username = "'+username+'", token="'+device_token+'";',function (error, results, fields) {
+					 
+			if (error) console.log(error);
+					 
+		    });
+		    
 		    connection.end();
-
+		    
 		    response.end();
 
 		}).catch(function(error) {
