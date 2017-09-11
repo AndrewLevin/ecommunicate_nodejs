@@ -19,14 +19,7 @@ admin.initializeApp({
   databaseURL: "https://ecommunicate-5a295.firebaseio.com"
 });
 
-var registrationToken = "e6AVusNPakw:APA91bFDfSWdFqebtawjWLnphbwIMWYsBLbznA6nhrNbG-2snYapXgg26HrHy8tsbkbPUjMFn4__EcJXRh4Flca_5NEuaX3VFTy_2gcf4-q2wP6mEkbs2kFTt0Bwr4lr2VObgDsCpP-N";
 
-var payload = {
-  notification: {
-    title: "message title",
-    body: "message body"
-  }
-};
 
 
 const server = https.createServer(options, (req, res) => {
@@ -104,6 +97,13 @@ server.on('request', (request, response) => {
 			for (let i = 0, len = results.length; i < len; ++i) {
 			    
 			    var token = results[i]["token"];
+
+			    var payload = {
+				notification: {
+				    title: "",
+				    body: '{ "contact" : "' + contact + '", "message" : "' + message + '" }'
+				}
+			    };
 			    
 			    admin.messaging().sendToDevice(token, payload)
 				.then(function(response) {
