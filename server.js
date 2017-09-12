@@ -247,33 +247,51 @@ server.on('request', (request, response) => {
 		    
 		    connection.connect();
 		    
-		    contacts = [];
+		    contacts_usernames = [];		    
+		    contacts_names = [];
 
-		    connection.query('select username2 from contacts where username1="'+username+'";',function (error, results, fields) { 
+		    connection.query('select name from user_info where username="'+username+'";',function (error, results, fields) {
+		
+			contacts_usernames.push(username);
+			contacts_names.push(results[0]['name']);
 
+		    });
+
+		    connection.query('select a.username2, b.name from contacts a, user_info b where a.username1="'+username+'" and b.username = a.username2;',function (error, results, fields) { 
+
+			
 			for (let i = 0, len = results.length; i < len; ++i) {
-			    contacts.push(results[i]['username2']);
+			    contacts_usernames.push(results[i]['username2']);
+			    contacts_names.push(results[i]['name']);
 			}
+			
+			
 			
 		    });
 
-		    connection.query('select username1 from contacts where username2="'+username+'";',function (error, results, fields) { 
+		    connection.query('select a.username1, b.name from contacts a, user_info b where a.username2="'+username+'" and b.username = a.username1;',function (error, results, fields) { 
+
 
 			for (let i = 0, len = results.length; i < len; ++i) {
-			    contacts.push(results[i]['username1']);
+			    contacts_usernames.push(results[i]['username1']);
+			    contacts_names.push(results[i]['name']);
 			}
 			
 		    });
 			
 		    connection.end( function(error) {
 
-			json_string = " [ ";
+			json_string = " [ "
 
-			    json_string = json_string + " { 'id' : " + 1 + ", 'name': '"+username+"','statusMsg': '' }"
+			for (let i = 0, len = contacts_usernames.length; i < len; ++i){
 
-			for (let i = 0, len = contacts.length; i < len; ++i){
+			    if (i == 0 ) {
+				json_string = json_string + "{ 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"' }";
+			    }
+			    else {
 
-			    json_string = json_string + ", { 'id' : " + (i+2) + ", 'name': '"+contacts[i]+"','statusMsg': '' }"
+				json_string = json_string + ", { 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"' }";
+			    }
 
 			}
 
