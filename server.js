@@ -89,6 +89,20 @@ server.on('request', (request, response) => {
 			response.end();
 		    });
 
+		    if (forward == "0") {
+
+			connection.query('update contacts set new_message_username1=1 where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
+
+			});
+
+		    } else {
+
+			connection.query('update contacts set new_message_username2=1 where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
+
+			});
+
+		    }
+
 
 		    connection.query('select token from device_tokens where username = "'+contact+'";',function (error, results, fields) {
 					 
@@ -191,6 +205,11 @@ server.on('request', (request, response) => {
 			
 		    });
 
+		    if (reverse_forward)
+			connection.query('update contacts set new_message_username1=0 where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) {});
+		    else
+			connection.query('update contacts set new_message_username2=0 where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) {});
+
 
 		    connection.end( function(error) {
 
@@ -249,32 +268,42 @@ server.on('request', (request, response) => {
 		    
 		    contacts_usernames = [];		    
 		    contacts_names = [];
+		    contacts_new_message = [];
 
 		    connection.query('select name from user_info where username="'+username+'";',function (error, results, fields) {
 		
 			contacts_usernames.push(username);
 			contacts_names.push(results[0]['name']);
+			contacts_new_message.push("false");
 
 		    });
 
-		    connection.query('select a.username2, b.name from contacts a, user_info b where a.username1="'+username+'" and b.username = a.username2;',function (error, results, fields) { 
+		    connection.query('select a.username2, a.new_message_username1, b.name from contacts a, user_info b where a.username1="'+username+'" and b.username = a.username2;',function (error, results, fields) { 
 
 			
 			for (let i = 0, len = results.length; i < len; ++i) {
 			    contacts_usernames.push(results[i]['username2']);
 			    contacts_names.push(results[i]['name']);
+			    if ( results[i]['new_message_username1'] == 0)
+				contacts_new_message.push("false");
+			    else
+				contacts_new_message.push("true");
 			}
 			
 			
 			
 		    });
 
-		    connection.query('select a.username1, b.name from contacts a, user_info b where a.username2="'+username+'" and b.username = a.username1;',function (error, results, fields) { 
+		    connection.query('select a.username1, a.new_message_username2, b.name from contacts a, user_info b where a.username2="'+username+'" and b.username = a.username1;',function (error, results, fields) { 
 
 
 			for (let i = 0, len = results.length; i < len; ++i) {
 			    contacts_usernames.push(results[i]['username1']);
 			    contacts_names.push(results[i]['name']);
+			    if ( results[i]['new_message_username2'] == 0)
+				contacts_new_message.push("false");
+			    else
+				contacts_new_message.push("true");
 			}
 			
 		    });
@@ -286,11 +315,11 @@ server.on('request', (request, response) => {
 			for (let i = 0, len = contacts_usernames.length; i < len; ++i){
 
 			    if (i == 0 ) {
-				json_string = json_string + "{ 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"' }";
+				json_string = json_string + "{ 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"', 'new_message' = "+contacts_new_message[i]+" }";
 			    }
 			    else {
 
-				json_string = json_string + ", { 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"' }";
+				json_string = json_string + ", { 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"', 'new_message' = "+contacts_new_message[i]+" }";
 			    }
 
 			}
