@@ -217,7 +217,7 @@ server.on('request', (request, response) => {
 		    var payload = {
 			notification: {
 			    title: "",
-			    body: '{ "contact" : "' + username1 + '", "message" : "' + latest_message_backward + '" }',
+			    body: '{ "contact" : "' + username2 + '", "message" : "' + latest_message_backward + '" }',
 			    collapse_key : 'ecommunicate chat '+ username2,
 			    tag : 'ecommunicate chat '+username2
 
@@ -242,7 +242,7 @@ server.on('request', (request, response) => {
 		    var payload = {
 			notification: {
 			    title: "",
-			    body: '{ "contact" : "' + username2 + '", "message" : "' + latest_message_forward + '" }',
+			    body: '{ "contact" : "' + username1 + '", "message" : "' + latest_message_forward + '" }',
 			    collapse_key : 'ecommunicate chat '+ username1,
 			    tag : 'ecommunicate chat '+username1
 
@@ -457,7 +457,6 @@ server.on('request', (request, response) => {
 			response.write(json_string);
 
 			response.end();	    
-
 		    
 		    });
 
