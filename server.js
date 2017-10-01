@@ -6,8 +6,8 @@ const hostname = 'ec2-35-165-191-120.us-west-2.compute.amazonaws.com';
 const port = 443;
 
 const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/test.ecommunicate.ch/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/test.ecommunicate.ch/fullchain.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/android.ecommunicate.ch/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/android.ecommunicate.ch/fullchain.pem')
 };
 
 var admin = require("firebase-admin");
@@ -41,6 +41,13 @@ var mysql      = require('mysql');
 crypto = require('crypto')
 
 server.on('request', (request, response) => {
+
+    var now = new Date();
+
+    console.log(now.toISOString());
+    console.log(request.url);
+    console.log(request.method);
+    console.log(request.headers);
 
     if (request.method === 'POST' && request.url === '/submitmessage/'){
 
@@ -115,7 +122,11 @@ server.on('request', (request, response) => {
 			    var payload = {
 				notification: {
 				    title: "",
-				    body: '{ "contact" : "' + contact + '", "message" : "' + message + '" }'
+				    body: username + ': '+message
+				},
+				data:  {
+				    'contact' : username,
+				    'message' : message
 				}
 			    };
 			    
@@ -163,110 +174,168 @@ server.on('request', (request, response) => {
 	    });
 	    
 	    connection.connect();
+
+	    if (username1 == username2){
+
+		device_tokens = []
+
+		connection.query('select token from device_tokens where username = "'+username1+'";',function (error, results, fields) { 
+		    
+		    for (let i = 0, len = results.length; i < len; ++i) {
+			
+			device_tokens.push(results[i]["token"]);
+			
+		    }	
+
+		});
+
+		latest_message = ""
+
+		connection.query('select message from messages where username1="'+username1+'" and username2 ="'+username2+'" order by time desc limit 1;',function (error, results, fields) { 
+		    if (results.length > 0 )
+			latest_message = results[0]["message"]
+		});
+			
+		 
+		connection.end( function(error) {
+		    
+		    for (let i = 0, len = device_tokens.length; i < len; ++i) {
+			
+			var token = device_tokens[i];
+			
+			var payload = {
+			    notification: {
+				title: "",
+				body: username1 + ': ' + latest_message,
+				collapse_key : 'ecommunicate chat '+ username1,
+				tag : 'ecommunicate chat '+username1
+				
+			    },
+			    data:  { 
+				'contact' : username1, 
+				'message' : latest_message
+			    }
+			};
+			
+			admin.messaging().sendToDevice(token, payload)
+			    .then(function(response) {
+				console.log("Successfully sent message:", response);
+			    })
+			    .catch(function(error) {
+				console.log("Error sending message:", error);
+			    });
+		    }	    
+		});
+	    }
+	    else {				
 	    
-	    connection.query('select new_message_username1, new_message_username2 from contacts where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
+		connection.query('select new_message_username1, new_message_username2 from contacts where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
+		    
+		    new_message_username1 = results[0]["new_message_username1"];
+		    new_message_username2 = results[0]["new_message_username2"];
+		    
+		});
 		
-		new_message_username1 = results[0]["new_message_username1"];
-		new_message_username2 = results[0]["new_message_username2"];
-
-	    });
-	    
-
-	    latest_message_forward = ""
-	    latest_message_backward = ""
-
-	    connection.query('select message from messages where username1="'+username1+'" and username2 ="'+username2+'" and forward = 1 order by time desc limit 1;',function (error, results, fields) { 
-		if (results.length > 0 )
-		    latest_message_forward = results[0]["message"]
-	    });
-
-	    connection.query('select message from messages where username1="'+username1+'" and username2 ="'+username2+'" and forward = 0 order by time desc limit 1;',function (error, results, fields) { 
-		if (results.length > 0 )
-		    latest_message_backward = results[0]["message"]
-	    });
-
-	    device_tokens_username1 = [];
-	    device_tokens_username2 = [];
-
-	    connection.query('select token from device_tokens where username = "'+username1+'";',function (error, results, fields) { 
-
-		for (let i = 0, len = results.length; i < len; ++i) {
+		
+		latest_message_forward = ""
+		latest_message_backward = ""
+		
+		connection.query('select message from messages where username1="'+username1+'" and username2 ="'+username2+'" and forward = 1 order by time desc limit 1;',function (error, results, fields) { 
+		    if (results.length > 0 )
+			latest_message_forward = results[0]["message"]
+		});
+		
+		connection.query('select message from messages where username1="'+username1+'" and username2 ="'+username2+'" and forward = 0 order by time desc limit 1;',function (error, results, fields) { 
+		    if (results.length > 0 )
+			latest_message_backward = results[0]["message"]
+		});
+		
+		device_tokens_username1 = [];
+		device_tokens_username2 = [];
+		
+		connection.query('select token from device_tokens where username = "'+username1+'";',function (error, results, fields) { 
 		    
-		    device_tokens_username1.push(results[i]["token"]);
-
-		}
-
-	    });
-
-	    connection.query('select token from device_tokens where username = "'+username2+'";',function (error, results, fields) { 
-
-		for (let i = 0, len = results.length; i < len; ++i) {
+		    for (let i = 0, len = results.length; i < len; ++i) {
+			
+			device_tokens_username1.push(results[i]["token"]);
+			
+		    }
 		    
-		    device_tokens_username2.push(results[i]["token"]);
-
-		}	
-
-	    });
-					 
-	    connection.end( function(error) {
-
-		for (let i = 0, len = device_tokens_username1.length; i < len; ++i) {
+		});
+		
+		connection.query('select token from device_tokens where username = "'+username2+'";',function (error, results, fields) { 
 		    
-		    var token = device_tokens_username1[i];
+		    for (let i = 0, len = results.length; i < len; ++i) {
+			
+			device_tokens_username2.push(results[i]["token"]);
+			
+		    }	
+
+		});
+		
+		connection.end( function(error) {
 		    
-		    var payload = {
-			notification: {
-			    title: "",
-			    body: '{ "contact" : "' + username2 + '", "message" : "' + latest_message_backward + '" }',
-			    collapse_key : 'ecommunicate chat '+ username2,
-			    tag : 'ecommunicate chat '+username2
-
-			},
-
-
-		    };
+		    for (let i = 0, len = device_tokens_username1.length; i < len; ++i) {
+			
+			var token = device_tokens_username1[i];
+			
+			var payload = {
+			    notification: {
+				title: "",
+				body: username2 + ': ' + latest_message_backward,
+				collapse_key : 'ecommunicate chat '+ username2,
+				tag : 'ecommunicate chat '+username2
+				
+			    },
+			    data:  { 
+				'contact' : username2, 
+				'message' : latest_message_backward 
+			    }
+			};
+			
+			admin.messaging().sendToDevice(token, payload)
+			    .then(function(response) {
+				console.log("Successfully sent message:", response);
+			    })
+			    .catch(function(error) {
+				console.log("Error sending message:", error);
+			    });
+		    }
 		    
-		    admin.messaging().sendToDevice(token, payload)
-			.then(function(response) {
-			    console.log("Successfully sent message:", response);
-			})
-			.catch(function(error) {
-			    console.log("Error sending message:", error);
-			});
-		}
-
-		for (let i = 0, len = device_tokens_username2.length; i < len; ++i) {
+		    for (let i = 0, len = device_tokens_username2.length; i < len; ++i) {
+			
+			var token = device_tokens_username2[i];
+			
+			var payload = {
+			    notification: {
+				title: "",
+				body: username1 + ': '+latest_message_forward,
+				collapse_key : 'ecommunicate chat '+ username1,
+				tag : 'ecommunicate chat '+username1
+				
+			    },
+			    
+			    data:  { 
+				'contact' : username1, 
+				'message' : latest_message_forward  
+			    }
+			    
+			};
+			
+			admin.messaging().sendToDevice(token, payload)
+			    .then(function(response) {
+				console.log("Successfully sent message:", response);
+			    })
+			    .catch(function(error) {
+				console.log("Error sending message:", error);
+			    });
+		    }
 		    
-		    var token = device_tokens_username2[i];
-		    
-		    var payload = {
-			notification: {
-			    title: "",
-			    body: '{ "contact" : "' + username1 + '", "message" : "' + latest_message_forward + '" }',
-			    collapse_key : 'ecommunicate chat '+ username1,
-			    tag : 'ecommunicate chat '+username1
+		});
 
-			},
-
-
-
-		    };
-		    
-		    admin.messaging().sendToDevice(token, payload)
-			.then(function(response) {
-			    console.log("Successfully sent message:", response);
-			})
-			.catch(function(error) {
-			    console.log("Error sending message:", error);
-			});
-		}
-
-	    });
-	    
+	    }		
 	});
-	
     }
-
 
     if (request.method === 'POST' && request.url === '/messages/'){
 
