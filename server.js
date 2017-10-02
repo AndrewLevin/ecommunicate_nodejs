@@ -379,7 +379,7 @@ server.on('request', (request, response) => {
 		    }
 		       
 
-		    connection.query('select * from messages where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
+		    connection.query('(select * from messages where username1="'+username1+'" and username2 ="'+username2+'" order by time desc limit 30) order by time asc;',function (error, results, fields) { 
 			for (let i = 0, len = results.length; i < len; ++i) {
 			    messages.push(results[i]["message"]);
 			    if (reverse_forward){
