@@ -122,7 +122,9 @@ server.on('request', (request, response) => {
 			    var payload = {
 				notification: {
 				    title: "",
-				    body: username + ': '+message
+				    body: username + ': '+message,
+				    collapse_key : 'ecommunicate chat '+ username,
+				    tag : 'ecommunicate chat '+username
 				},
 				data:  {
 				    'contact' : username,
@@ -497,23 +499,15 @@ server.on('request', (request, response) => {
 			
 		    connection.end( function(error) {
 
-			json_string = " [ "
+			json_array =[]
 
 			for (let i = 0, len = contacts_usernames.length; i < len; ++i){
 
-			    if (i == 0 ) {
-				json_string = json_string + "{ 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"', 'new_message' = "+contacts_new_message[i]+" }";
-			    }
-			    else {
-
-				json_string = json_string + ", { 'id' : " + (i+1) + ", 'username': '"+contacts_usernames[i]+"','name': '"+contacts_names[i]+"', 'new_message' = "+contacts_new_message[i]+" }";
-			    }
+			    json_array.push({ "id" : (i+1), "username" : contacts_usernames[i], "name": contacts_names[i], "new_message" : contacts_new_message[i]});
 
 			}
 
-			json_string = json_string + " ] "
-
-			response.write(json_string);
+			response.write(JSON.stringify(json_array));
 
 			response.end();	    
 		    
