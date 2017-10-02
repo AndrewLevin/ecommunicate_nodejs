@@ -610,7 +610,7 @@ server.on('request', (request, response) => {
 		    .update(JSON.parse(decodeURIComponent(body))["password"])
 		    .digest('hex');
 		
-		if(results[0]['hashed_password'] === hash){
+		if(results.length == 1 &&  results[0]['hashed_password'] === hash){
 		    admin.auth().createCustomToken(username)
 			.then(function(customToken) {
 			    response.write(customToken);
@@ -618,12 +618,15 @@ server.on('request', (request, response) => {
 			    response.end();
 			})
 			.catch(function(error) {
-			    response.write("Unsuccesful login.");
+			    response.write("Unsuccessful login.");
 			    response.end();
 			    console.log("Error creating custom token:", error);
 			});
 		    
 		} else {
+		    response.write("Unsuccesful login.");
+		    response.end();
+		    console.log("Unsuccessful login for username "+ username+".");
 		    
 		}
 		
