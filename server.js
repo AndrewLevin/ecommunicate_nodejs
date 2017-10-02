@@ -410,25 +410,15 @@ server.on('request', (request, response) => {
 
 		    connection.end( function(error) {
 
-			json_string = " [ ";
+			json_array = [];
 
 			for (let i = 0, len = messages.length; i < len; ++i){
 
-			    if (i === 0){
-
-				
-				json_string = json_string + " { 'forward' : " + forward[i] + ", 'messages': '"+messages[i]+"','time': '' } "
-
-			    }
-			    else
-				json_string = json_string + " , { 'forward' : " + forward[i] + ", 'messages': '"+messages[i]+"','time': '' } "
+			    json_array.push({"forward" : forward[i], "messages" : messages[i], "time" : "" });
 
 			}
 
-			json_string = json_string + " ] "
-
-
-			response.write(json_string);
+			response.write(JSON.stringify(json_array));
 			
 			response.end();
 
