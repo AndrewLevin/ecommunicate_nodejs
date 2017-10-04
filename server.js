@@ -146,6 +146,9 @@ server.on('request', (request, response) => {
 		    });
 
 
+		    connection.end( function(error) { });
+
+
 
 		});
 
@@ -175,9 +178,11 @@ server.on('request', (request, response) => {
 		port : '3306',
 	    });
 	    
-	    connection.connect();
+
 
 	    if (username1 == username2){
+
+		connection.connect();
 
 		device_tokens = []
 
@@ -229,8 +234,10 @@ server.on('request', (request, response) => {
 		    }	    
 		});
 	    }
-	    else {				
-	    
+	    else {		
+
+		connection.connect();
+
 		connection.query('select new_message_username1, new_message_username2 from contacts where username1="'+username1+'" and username2 ="'+username2+'";',function (error, results, fields) { 
 		    
 		    new_message_username1 = results[0]["new_message_username1"];
