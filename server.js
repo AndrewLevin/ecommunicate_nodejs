@@ -69,10 +69,10 @@ server.on('request', (request, response) => {
 		    var username = decodedToken.uid;
 
 		    var connection = mysql.createConnection({
-			host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-			user     : 'nodejs_server',
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
 			password : mysql_db_password,
-			database : 'open',
+			database : 'ecommunicate',
 			port : '3306',
 		    });
 		    
@@ -171,10 +171,10 @@ server.on('request', (request, response) => {
 
 
 	    var connection = mysql.createConnection({
-		host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-		user     : 'nodejs_server',
+		host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+		user     : 'android_chat',
 		password : mysql_db_password,
-		database : 'open',
+		database : 'ecommunicate',
 		port : '3306',
 	    });
 	    
@@ -364,10 +364,10 @@ server.on('request', (request, response) => {
 		    var username = decodedToken.uid;
 
 		    var connection = mysql.createConnection({
-			host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-			user     : 'nodejs_server',
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
 			password : mysql_db_password,
-			database : 'open',
+			database : 'ecommunicate',
 			port : '3306',
 		    });
 		    
@@ -453,10 +453,10 @@ server.on('request', (request, response) => {
 		    var username = decodedToken.uid;
 
 		    var connection = mysql.createConnection({
-			host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-			user     : 'nodejs_server',
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
 			password : mysql_db_password,
-			database : 'open',
+			database : 'ecommunicate',
 			port : '3306',
 		    });
 		    
@@ -544,16 +544,18 @@ server.on('request', (request, response) => {
 		    var username = decodedToken.uid;
 		    
 		    var connection = mysql.createConnection({
-			host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-			user     : 'nodejs_server',
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
 			password : mysql_db_password,
-			database : 'open',
+			database : 'ecommunicate',
 			port : '3306',
 		    });
 		    
 		    connection.connect();
 		    
-		    connection.query('insert into device_tokens set username = "'+username+'", token="'+device_token+'";',function (error, results, fields) {
+		    var now = new Date();
+
+		    connection.query('insert into device_tokens set username = "'+username+'", token="'+device_token+'", registration_time="'+now.toISOString()+'";',function (error, results, fields) {
 					 
 			if (error) console.log(error);
 					 
@@ -586,10 +588,10 @@ server.on('request', (request, response) => {
 	    const username = JSON.parse(decodeURIComponent(body))["username"];
 	    
 	    var connection = mysql.createConnection({
-		host     : 'tutorial-db-instance.cphov5mfizlt.us-west-2.rds.amazonaws.com',
-		user     : 'nodejs_server',
+		host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+		user     : 'android_chat',
 		password : mysql_db_password,
-		database : 'open',
+		database : 'ecommunicate',
 		port : '3306',
 	    });
 	    
