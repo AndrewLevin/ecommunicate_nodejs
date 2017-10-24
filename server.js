@@ -19,9 +19,6 @@ admin.initializeApp({
   databaseURL: "https://ecommunicate-5a295.firebaseio.com"
 });
 
-
-
-
 const server = https.createServer(options, (req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
@@ -80,7 +77,7 @@ server.on('request', (request, response) => {
 
 		    forward = "1";
 
-		    if (username  < contact ){
+		    if (username  < contact){
 			username1 = username;
 			username2 = contact;
 
@@ -111,7 +108,7 @@ server.on('request', (request, response) => {
 		    }
 
 
-		    connection.query('select token from device_tokens where username = "'+contact+'";',function (error, results, fields) {
+		    connection.query('select token from device_tokens_chat where username = "'+contact+'";',function (error, results, fields) {
 					 
 			if (error) console.log(error);
 					 
@@ -186,7 +183,7 @@ server.on('request', (request, response) => {
 
 		device_tokens = []
 
-		connection.query('select token from device_tokens where username = "'+username1+'";',function (error, results, fields) { 
+		connection.query('select token from device_tokens_chat where username = "'+username1+'";',function (error, results, fields) { 
 		    
 		    for (let i = 0, len = results.length; i < len; ++i) {
 			
@@ -262,7 +259,7 @@ server.on('request', (request, response) => {
 		device_tokens_username1 = [];
 		device_tokens_username2 = [];
 		
-		connection.query('select token from device_tokens where username = "'+username1+'";',function (error, results, fields) { 
+		connection.query('select token from device_tokens_chat where username = "'+username1+'";',function (error, results, fields) { 
 		    
 		    for (let i = 0, len = results.length; i < len; ++i) {
 			
@@ -272,7 +269,7 @@ server.on('request', (request, response) => {
 		    
 		});
 		
-		connection.query('select token from device_tokens where username = "'+username2+'";',function (error, results, fields) { 
+		connection.query('select token from device_tokens_chat where username = "'+username2+'";',function (error, results, fields) { 
 		    
 		    for (let i = 0, len = results.length; i < len; ++i) {
 			
@@ -555,7 +552,7 @@ server.on('request', (request, response) => {
 		    
 		    var now = new Date();
 
-		    connection.query('insert into device_tokens set username = "'+username+'", token="'+device_token+'", registration_time="'+now.toISOString()+'";',function (error, results, fields) {
+		    connection.query('insert into device_tokens_chat set username = "'+username+'", token="'+device_token+'", registration_time="'+now.toISOString()+'";',function (error, results, fields) {
 					 
 			if (error) console.log(error);
 					 
