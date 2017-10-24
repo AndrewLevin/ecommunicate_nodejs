@@ -6,8 +6,8 @@ const hostname = 'ec2-35-165-191-120.us-west-2.compute.amazonaws.com';
 const port = 443;
 
 const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/android.ecommunicate.ch/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/android.ecommunicate.ch/fullchain.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/chat.android.ecommunicate.ch/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/chat.android.ecommunicate.ch/fullchain.pem')
 };
 
 var admin = require("firebase-admin");
