@@ -628,18 +628,35 @@ server.on('request', (request, response) => {
 		if(results.length == 1 &&  results[0]['hashed_password'] === hash){
 		    admin.auth().createCustomToken(username)
 			.then(function(customToken) {
-			    response.write(customToken);
+
+			    console.log("Successful login for username "+ username+".");
+
+			    json_object = {"success" : true, "custom_token" : customToken};
+
+			    response.write(JSON.stringify(json_object));
 
 			    response.end();
 			})
+
 			.catch(function(error) {
-			    response.write("Unsuccessful login.");
-			    response.end();
+
+			    console.log("Unsuccessful login for username "+ username+".");
+
 			    console.log("Error creating custom token:", error);
+
+			    json_object = {"success" : false, "custom_token" : ""};
+
+			    response.write(JSON.stringify(json_object));
+			    
+			    response.end();
+
 			});
 		    
 		} else {
-		    response.write("Unsuccesful login.");
+
+		    json_object = {"success" : false, "custom_token" : ""};
+
+		    response.write(JSON.stringify(json_object));
 		    response.end();
 		    console.log("Unsuccessful login for username "+ username+".");
 		    
