@@ -575,21 +575,25 @@ server.on('request', (request, response) => {
 		    
 		    contact_request_usernames = [];		    
 
-		    connection.query('select username2 from contact_requests where username1="'+username+'" and forward=0;',function (error, results, fields) {
+		    contact_request_messages = [];		    
+
+		    connection.query('select username2,message from contact_requests where username1="'+username+'" and forward=0;',function (error, results, fields) {
 			
 			for (let i = 0, len = results.length; i < len; ++i) {
 
 			    contact_request_usernames.push(results[i]["username2"]);
+			    contact_request_messages.push(results[i]["message"]);
 
 			}
 
 		    });
 
-		    connection.query('select username1 from contact_requests where username2="'+username+'" and forward = 1;',function (error, results, fields) {
+		    connection.query('select username1,message from contact_requests where username2="'+username+'" and forward = 1;',function (error, results, fields) {
 		
 			for (let i = 0, len = results.length; i < len; ++i) {
 
 			    contact_request_usernames.push(results[i]["username1"]);
+			    contact_request_messages.push(results[i]["message"]);
 			}
 			
 
@@ -601,7 +605,7 @@ server.on('request', (request, response) => {
 
 			for (let i = 0, len = contact_request_usernames.length; i < len; ++i){
 
-			    json_array.push({ "id" : (i+1), "username" : contact_request_usernames[i], "name" : "", "message" : ""});
+			    json_array.push({ "id" : (i+1), "username" : contact_request_usernames[i], "name" : "", "message" : contact_request_messages[i]});
 
 			}
 
