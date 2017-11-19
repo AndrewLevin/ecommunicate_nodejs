@@ -34,7 +34,6 @@ var mysql_db_password = fs.readFileSync('/home/ec2-user/secrets.txt').toString()
 
 var mysql      = require('mysql');
 
- 
 crypto = require('crypto')
 
 server.on('request', (request, response) => {
@@ -550,6 +549,156 @@ server.on('request', (request, response) => {
 	})
     }
 
+    if (request.method === 'POST' && request.url === '/getcontactrequests/'){
+
+	let body = [];
+	request.on('data', (chunk) => {
+	    body.push(chunk);
+	}).on('end', () => {
+
+	    body = Buffer.concat(body).toString();
+	    const id_token = JSON.parse(decodeURIComponent(body))["id_token"];
+
+	    admin.auth().verifyIdToken(id_token)
+		.then(function(decodedToken) {
+		    var username = decodedToken.uid;
+
+		    var connection = mysql.createConnection({
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
+			password : mysql_db_password,
+			database : 'ecommunicate',
+			port : '3306',
+		    });
+		    
+		    connection.connect();
+		    
+		    contact_request_usernames = [];		    
+
+		    connection.query('select username2 from contact_requests where username1="'+username+'" and forward=0;',function (error, results, fields) {
+			
+			for (let i = 0, len = results.length; i < len; ++i) {
+
+			    contact_request_usernames.push(results[i]["username2"]);
+
+			}
+
+		    });
+
+		    connection.query('select username1 from contact_requests where username2="'+username+'" and forward = 1;',function (error, results, fields) {
+		
+			for (let i = 0, len = results.length; i < len; ++i) {
+
+			    contact_request_usernames.push(results[i]["username1"]);
+			}
+			
+
+		    });
+
+		    connection.end( function(error) {
+
+			json_array =[]
+
+			for (let i = 0, len = contact_request_usernames.length; i < len; ++i){
+
+			    json_array.push({ "id" : (i+1), "username" : contact_request_usernames[i], "name" : "", "message" : ""});
+
+			}
+
+			response.write(JSON.stringify(json_array));
+
+			response.end();	    
+		    
+		    });
+
+
+
+
+
+		});
+	})
+    }
+
+    if (request.method === 'POST' && request.url === '/submitcontactrequestresponse/'){
+
+	let body = [];
+	request.on('data', (chunk) => {
+	    body.push(chunk);
+	}).on('end', () => {
+
+	    body = Buffer.concat(body).toString();
+	    const id_token = JSON.parse(decodeURIComponent(body))["id_token"];
+	    const contact = JSON.parse(decodeURIComponent(body))["username"];
+	    const accept = JSON.parse(decodeURIComponent(body))["accept"];
+
+	    admin.auth().verifyIdToken(id_token)
+		.then(function(decodedToken) {
+		    var username = decodedToken.uid;
+
+		    var connection = mysql.createConnection({
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
+			password : mysql_db_password,
+			database : 'ecommunicate',
+			port : '3306',
+		    });
+		    
+		    connection.connect();
+		    
+		    forward = "1";
+
+		    if (username  < contact){
+			username1 = username;
+			username2 = contact;
+
+		    } else {
+			username2 = username;
+			username1 = contact;
+			forward = "0";
+		    }
+
+		    var now = new Date();
+
+		    contact_request_usernames = [];		    
+
+		    if (accept == "false"){
+
+			connection.query('delete from contact_requests where username1="'+username1+'" and username2="'+username2+'";',function (error, results, fields) { });
+
+			console.log("contact request rejected");
+
+		    }
+
+		    if (accept == "true"){
+
+
+			connection.query('insert into contacts set username1="'+username1+'", new_message_username1 = 0, new_message_username2 = 0, username2 ="'+username2+'", accept_time = "'+now.toISOString()+'";',function (error, results, fields) { });
+			
+			connection.query('delete from contact_requests where username1="'+username1+'" and username2="'+username2+'";',function (error, results, fields) { });
+
+			console.log("contact request accepted");
+
+		    }
+		    
+
+		    connection.end( function(error) {
+
+			json_object = {"success" : true, "reason" : ""}
+
+			response.write(JSON.stringify(json_object));
+
+			response.end();	    
+		    
+		    });
+
+
+
+
+
+		});
+	})
+    }
+
     if (request.method === 'POST' && request.url === '/registerdevice/'){
 
 	let body = [];
@@ -667,6 +816,148 @@ server.on('request', (request, response) => {
 	    connection.end();
 	    
 	});
+    }
+
+    if (request.method === 'POST' && request.url === '/makecontactrequest/') {
+	
+	let body = [];
+	request.on('data', (chunk) => {
+	    body.push(chunk);
+	}).on('end', () => {
+	    body = Buffer.concat(body).toString();
+	    const contact = JSON.parse(decodeURIComponent(body))["username"];
+	    const message = JSON.parse(decodeURIComponent(body))["message"];
+	    const id_token = JSON.parse(decodeURIComponent(body))["id_token"];
+
+	    admin.auth().verifyIdToken(id_token)
+		.then(function(decodedToken) {
+		    var username = decodedToken.uid;
+
+		    
+		    var connection = mysql.createConnection({
+			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			user     : 'android_chat',
+			password : mysql_db_password,
+			database : 'ecommunicate',
+			port : '3306',
+		    });
+		    
+		    forward = "1";
+
+		    if (username  < contact){
+			username1 = username;
+			username2 = contact;
+
+		    } else {
+			username2 = username;
+			username1 = contact;
+			forward = "0";
+		    }
+
+		    var now = new Date();
+
+
+		    connection.connect();
+		    
+		    var results1;
+
+		    var results2;
+
+		    var results3;
+
+		    connection.query('select * from user_info where username = "'+contact+'";',function (error, results, fields) {
+
+			results1 = results;
+
+		    });
+		    
+		    connection.query('select * from contacts where username1 = "'+username1+'" and username2 = "'+username2+'";',function (error, results, fields) {
+			results2 = results;
+			
+			
+			
+		    });
+
+		    connection.query('select * from contact_requests where username1 = "'+username1+'" and username2 = "'+username2+'";',function (error, results, fields) {
+			
+			results3 = results;
+
+			
+		    });
+		    
+		    connection.end( function(error) { 
+
+			
+			if(results1.length == 0){
+				    
+
+			    json_object = {"success" : false, "reason" : "Username does not exist."};
+			    
+			    response.write(JSON.stringify(json_object));
+			    response.end();
+			    console.log("Unsuccessful contact request for username "+ username+".");
+
+			    return;
+			    
+			}
+
+
+			if(results2.length == 1){
+				    
+			    console.log("Unuccesful contact request for user "+ contact+".");
+			    
+			    json_object = {"success" : false, "reason" : "This username is already one of your contacts."};
+			    
+			    response.write(JSON.stringify(json_object));
+			    
+			    response.end();
+
+			    return;
+			}
+
+
+			if(results3.length == 1){
+				    
+			    console.log("Unsuccesful contact request for user "+ contact+".");
+			    
+			    json_object = {"success" : false, "reason" : "A contact request already exists for you and this username."};
+			    
+			    response.write(JSON.stringify(json_object));
+			    
+			    response.end();
+
+			    return;
+			}
+
+			var new_connection = mysql.createConnection({
+			    host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
+			    user     : 'android_chat',
+			    password : mysql_db_password,
+			    database : 'ecommunicate',
+			    port : '3306',
+			});
+			
+			new_connection.connect();
+
+			new_connection.query('insert into contact_requests set username1="'+username1+'", username2 ="'+username2+'", forward="'+forward+'", message="'+message+'", request_time = "'+now.toISOString()+'";',function (error, results, fields) { 
+
+			    json_object = {"success" : true, "reason" : ""};
+			    
+			    response.write(JSON.stringify(json_object));
+
+			    response.end();
+			});
+
+
+			new_connection.end();
+
+
+
+		    });
+		    
+		});
+	});
+
     }
     
     if (request.method === 'POST' && request.url === '/register/') {
