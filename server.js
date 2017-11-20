@@ -892,6 +892,18 @@ server.on('request', (request, response) => {
 		    connection.end( function(error) { 
 
 			
+			if (username1 == username2) {
+
+			    json_object = {"success" : false, "reason" : "This is your username."};
+			    
+			    response.write(JSON.stringify(json_object));
+			    response.end();
+			    console.log("Unsuccessful contact request for username "+ username+".");
+
+			    return;
+
+			}
+
 			if(results1.length == 0){
 				    
 
