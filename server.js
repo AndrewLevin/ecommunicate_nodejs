@@ -762,6 +762,8 @@ server.on('request', (request, response) => {
 	    body = Buffer.concat(body).toString();
 	    const username = JSON.parse(decodeURIComponent(body))["username"];
 	    
+	    console.log(username);
+
 	    var connection = mysql.createConnection({
 		host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
 		user     : 'android_chat',
@@ -772,12 +774,16 @@ server.on('request', (request, response) => {
 	    
 	    connection.connect();
 	    
+	    console.log('select * from user_info where username = "'+username+'";');
+
 	    connection.query('select * from user_info where username = "'+username+'";',function (error, results, fields) {
 		
 		const hash = crypto.createHash('sha256')
 		    .update(JSON.parse(decodeURIComponent(body))["password"])
 		    .digest('hex');
 		
+		console.log(results);
+
 		if(results.length == 1 &&  results[0]['hashed_password'] === hash){
 		    admin.auth().createCustomToken(username)
 			.then(function(customToken) {
@@ -837,7 +843,6 @@ server.on('request', (request, response) => {
 		.then(function(decodedToken) {
 		    var username = decodedToken.uid;
 
-		    
 		    var connection = mysql.createConnection({
 			host     : 'ecommunicate-production.cphov5mfizlt.us-west-2.rds.amazonaws.com',
 			user     : 'android_chat',
@@ -892,13 +897,14 @@ server.on('request', (request, response) => {
 		    connection.end( function(error) { 
 
 			
-			if (username1 == username2) {
+			if (username1.toLowerCase() == username2.toLowerCase()) {
 
-			    json_object = {"success" : false, "reason" : "This is your username."};
+			    json_object = {"success" : false, "reason" : "This is your username. You can always chat with yourself. You do not need to make a contact request."};
 			    
 			    response.write(JSON.stringify(json_object));
 			    response.end();
-			    console.log("Unsuccessful contact request for username "+ username+".");
+
+			    console.log("Unsuccessful contact request from " + username + " to " + contact + ".");
 
 			    return;
 
@@ -911,7 +917,7 @@ server.on('request', (request, response) => {
 			    
 			    response.write(JSON.stringify(json_object));
 			    response.end();
-			    console.log("Unsuccessful contact request for username "+ username+".");
+			    console.log("Unsuccessful contact request from " + username + " to " + contact + ".");
 
 			    return;
 			    
@@ -920,8 +926,8 @@ server.on('request', (request, response) => {
 
 			if(results2.length == 1){
 				    
-			    console.log("Unuccesful contact request for user "+ contact+".");
-			    
+			    console.log("Unsuccessful contact request from " + username + " to " + contact + ".");
+
 			    json_object = {"success" : false, "reason" : "This username is already one of your contacts."};
 			    
 			    response.write(JSON.stringify(json_object));
@@ -934,7 +940,7 @@ server.on('request', (request, response) => {
 
 			if(results3.length == 1){
 				    
-			    console.log("Unsuccesful contact request for user "+ contact+".");
+			    console.log("Unsuccessful contact request from " + username + " to " + contact + ".");
 			    
 			    json_object = {"success" : false, "reason" : "A contact request already exists for you and this username."};
 			    
@@ -962,6 +968,9 @@ server.on('request', (request, response) => {
 			    response.write(JSON.stringify(json_object));
 
 			    response.end();
+
+			    console.log("Successful contact request from " + username + " to " + contact + ".");
+
 			});
 
 
