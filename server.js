@@ -783,8 +783,9 @@ server.on('request', (request, response) => {
 		    .digest('hex');
 		
 		console.log(results);
+		console.log(error);
 
-		if(results.length == 1 &&  results[0]['hashed_password'] === hash){
+		if(Array.isArray(results) && results.length == 1 &&  results[0]['hashed_password'] === hash){
 		    admin.auth().createCustomToken(username)
 			.then(function(customToken) {
 
