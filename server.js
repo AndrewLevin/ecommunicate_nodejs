@@ -898,7 +898,7 @@ server.on('request', (request, response) => {
 		    connection.end( function(error) { 
 
 			
-			if (username1.toLowerCase() == username2.toLowerCase()) {
+			if (username1.toLowerCase().trim() == username2.toLowerCase().trim()) {
 
 			    json_object = {"success" : false, "reason" : "This is your username. You can always chat with yourself. You do not need to make a contact request."};
 			    
