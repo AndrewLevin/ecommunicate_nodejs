@@ -793,6 +793,8 @@ server.on('request', (request, response) => {
 
 			    json_object = {"success" : true, "custom_token" : customToken};
 
+			    console.log(json_object);
+
 			    response.write(JSON.stringify(json_object));
 
 			    response.end();
@@ -806,6 +808,8 @@ server.on('request', (request, response) => {
 
 			    json_object = {"success" : false, "custom_token" : ""};
 
+			    console.log(json_object);
+
 			    response.write(JSON.stringify(json_object));
 			    
 			    response.end();
@@ -815,6 +819,8 @@ server.on('request', (request, response) => {
 		} else {
 
 		    json_object = {"success" : false, "custom_token" : ""};
+
+		    console.log(json_object);
 
 		    response.write(JSON.stringify(json_object));
 		    response.end();
